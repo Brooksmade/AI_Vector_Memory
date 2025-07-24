@@ -63,7 +63,7 @@ your-chosen-directory/
 
 ## 🖥️ **Windows PowerShell Integration**
 
-### **Setup Automatic Startup**
+### **Setup Automatic Startup (Recommended)**
 ```powershell
 # Navigate to your installation directory
 cd "C:\your\path\to\claude-code-vector-memory"
@@ -71,9 +71,11 @@ cd "C:\your\path\to\claude-code-vector-memory"
 # Import PowerShell module
 Import-Module .\ClaudeMemory.psm1
 
-# Install Windows startup (optional but recommended)
+# Install Windows startup - server will auto-start with Windows
 Install-ClaudeMemoryStartup
 ```
+
+**Note**: After running `Install-ClaudeMemoryStartup`, the Memory API server will automatically start every time Windows boots, ensuring it's always available for Claude Code CLI and Claude Desktop.
 
 ### **Manual Server Control**
 ```powershell
@@ -417,7 +419,7 @@ curl -X POST http://localhost:8080/api/add_memory \
 ## 🎯 **What's Next**
 
 1. **Test the installation** with `python test_api.py`
-2. **Set up automatic startup** (Windows): Run `Install-ClaudeMemoryStartup`
+2. **Set up automatic startup** (Windows): Run `Install-ClaudeMemoryStartup` - enables server auto-start on Windows boot
 3. **Configure MCP** for Claude Desktop (optional)
 4. **Add memory integration** to your AI assistant projects
 5. **Start using persistent memory** across all your coding sessions!

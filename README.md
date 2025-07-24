@@ -8,7 +8,7 @@ A comprehensive HTTP API-based memory system that provides persistent, searchabl
 - **Semantic Search**: ChromaDB with sentence transformers for conceptual similarity
 - **Cross-Platform**: Works with Claude Code CLI, Claude Desktop (via MCP), and any HTTP client
 - **Persistent Storage**: Memories survive restarts and are shared across all projects
-- **Windows Integration**: PowerShell module with automatic startup capabilities
+- **Windows Integration**: PowerShell module with automatic startup capabilities (server auto-starts with Windows)
 - **Universal Compatibility**: Works with any AI assistant that can make HTTP requests
 
 ## 📦 **Installation**
@@ -56,7 +56,7 @@ curl http://localhost:8080/api/health
 - **Complete Setup**: See [`QUICK_START.md`](QUICK_START.md) for detailed installation and configuration
 - **Claude Code CLI**: Copy memory integration template from QUICK_START.md to your project's CLAUDE.md
 - **Claude Desktop**: Follow MCP server setup instructions in QUICK_START.md
-- **Windows Startup**: Use PowerShell module for automatic server startup
+- **Windows Startup**: Use PowerShell module for automatic server startup on Windows boot
 
 ## 🔧 **API Endpoints**
 

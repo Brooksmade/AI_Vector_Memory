@@ -1,6 +1,7 @@
 @echo off
 REM Claude Memory API Server - Windows Startup Script
 REM This script starts the Memory API server with proper environment setup
+title Claude Memory API Server
 
 echo.
 echo ========================================

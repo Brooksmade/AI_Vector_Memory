@@ -1,173 +1,150 @@
-# Semantic Memory System for Claude Code
+# Claude Memory API - Persistent Memory System
 
-A semantic search system that indexes Claude Code session summaries to provide persistent memory and context across conversations.
+A comprehensive HTTP API-based memory system that provides persistent, searchable memory for AI assistants like Claude Code CLI and Claude Desktop. Uses ChromaDB for semantic search with sentence transformers.
 
-## Features
+## 🚀 **Features**
 
-- **Semantic Search**: Uses sentence transformers to find conceptually similar past sessions
-- **Hybrid Scoring**: Combines semantic similarity (70%), recency (20%), and complexity (10%)
-- **Rich Metadata**: Extracts titles, dates, technologies, file paths, and more
-- **ChromaDB Backend**: Fast vector similarity search with persistent storage
-- **Beautiful CLI**: Rich terminal output with tables and formatted results
-- **Health Monitoring**: Built-in diagnostics and quality checks
-- **Unit Tests**: Comprehensive test coverage for reliability
+- **REST API Server**: Flask-based HTTP API with comprehensive endpoints
+- **Semantic Search**: ChromaDB with sentence transformers for conceptual similarity
+- **Cross-Platform**: Works with Claude Code CLI, Claude Desktop (via MCP), and any HTTP client
+- **Persistent Storage**: Memories survive restarts and are shared across all projects
+- **Windows Integration**: PowerShell module with automatic startup capabilities
+- **Universal Compatibility**: Works with any AI assistant that can make HTTP requests
 
-## Quick Start
+## 📦 **Installation**
+
+### **1. Clone Repository**
+```bash
+git clone https://github.com/christian-byrne/claude-code-vector-memory.git
+cd claude-code-vector-memory
+```
+
+### **2. Python Environment Setup**
+```bash
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment
+# Windows:
+venv\Scripts\activate
+# macOS/Linux:
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+pip install -r requirements_api.txt
+```
+
+### **3. Start the System**
+```bash
+# Start the API server
+python memory_api_server.py
+
+# Verify it's running (in another terminal)
+curl http://localhost:8080/api/health
+```
+
+## 🎯 **Quick Start**
+
+1. **Clone and setup** (see Installation above)
+2. **Start the server**: `python memory_api_server.py`
+3. **Test the API**: `curl http://localhost:8080/api/health`
+4. **Search memories**: `curl -X POST http://localhost:8080/api/search -H "Content-Type: application/json" -d '{"query": "python development"}'`
+
+## 📖 **Integration Guides**
+
+- **Complete Setup**: See [`QUICK_START.md`](QUICK_START.md) for detailed installation and configuration
+- **Claude Code CLI**: Copy memory integration template from QUICK_START.md to your project's CLAUDE.md
+- **Claude Desktop**: Follow MCP server setup instructions in QUICK_START.md
+- **Windows Startup**: Use PowerShell module for automatic server startup
+
+## 🔧 **API Endpoints**
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/api/health` | GET | System health and status |
+| `/api/search` | POST | Search for memories |
+| `/api/add_memory` | POST | Save new memory |
+| `/api/memories` | GET | List all memories (paginated) |
+| `/api/memory/{id}` | DELETE | Delete specific memory |
+| `/api/reindex` | POST | Rebuild search index |
+
+## 🏗 **Architecture**
+
+- **HTTP API Server**: Flask with CORS, rate limiting, logging
+- **Vector Database**: ChromaDB with persistent storage
+- **Embedding Model**: Sentence transformers for semantic search
+- **PowerShell Module**: Windows integration and automation
+- **Validation**: Pydantic models for request/response validation
+
+## 🧪 **Testing**
 
 ```bash
-# From anywhere in the system (if claude-memory-search is in PATH)
-claude-memory-search "vue component implementation"
+# Run comprehensive test suite
+python test_api.py
 
-# Or from the semantic-memory-system directory:
-cd ~/agents/semantic-memory-system
-
-# Initial setup (first time only)
-./setup.sh
-
-# Search for past work
-./search.sh "vue component implementation"
-
-# Run health check
-python scripts/health_check.py
-
-# Run all tests
-./run_tests.sh
+# Test with PowerShell module (Windows)
+Import-Module .\ClaudeMemory.psm1
+Test-ClaudeMemoryAPI
+Search-ClaudeMemory "your query"
 ```
 
-## Installation
+## 📁 **Project Structure**
 
-1. Ensure you're in the semantic-memory-system directory
-2. Run the setup script:
-   ```bash
-   ./setup.sh
-   ```
-   This will:
-   - Create virtual environment
-   - Install all dependencies
-   - Build initial index
-   - Run health check
-
-3. Dependencies installed:
-   - sentence-transformers
-   - chromadb
-   - rich
-   - spacy
-   - pytest
-
-## Usage
-
-### 1. Index Your Summaries (First Time)
-
-```bash
-python scripts/index_summaries.py
+```
+claude-code-vector-memory/
+├── memory_api_server.py          # Main Flask API server
+├── ClaudeMemory.psm1            # PowerShell module
+├── models.py                    # Pydantic validation models
+├── memory_client.js             # JavaScript client library
+├── test_api.py                  # API test suite
+├── config.json                  # Server configuration
+├── requirements.txt             # Core dependencies
+├── requirements_api.txt         # API dependencies
+├── scripts/                     # Core memory scripts
+│   ├── memory_search.py         # Search functionality
+│   ├── index_summaries.py       # Indexing system
+│   └── health_check.py          # System diagnostics
+├── chroma_db/                   # Vector database (auto-created)
+├── QUICK_START.md               # Detailed setup guide
+├── UNINSTALL.md                 # Complete removal guide
+└── README.md                    # This file
 ```
 
-This scans `~/.claude/compacted-summaries/` and creates embeddings for each summary.
+## 💡 **Use Cases**
 
-### 2. Search for Past Sessions
+- **Project Continuity**: Remember past work across AI sessions
+- **Cross-Project Learning**: Share knowledge between different projects
+- **Development History**: Searchable archive of coding sessions
+- **Team Memory**: Shared knowledge base for AI-assisted development
 
-```bash
-python scripts/memory_search.py "vue widget implementation"
-```
+## 🛠 **Requirements**
 
-Returns the top 3 most relevant past sessions with:
-- Similarity scores
-- Brief previews
-- File paths to full summaries
+- Python 3.9+ (recommended: 3.11+)
+- 2GB free disk space (for embedding models)
+- Windows 10/11 (for PowerShell features)
+- Internet connection (initial model download)
 
-### 3. Analyze Metadata
+## 📚 **Documentation**
 
-```bash
-python scripts/extract_metadata.py
-```
+- **[QUICK_START.md](QUICK_START.md)** - Complete installation and setup guide
+- **[UNINSTALL.md](UNINSTALL.md)** - Full system removal instructions
+- **Memory Integration Template** - Copy from QUICK_START.md for any project
 
-Shows what information can be extracted from your summaries.
+## 🔒 **Security**
 
-### 4. Test Everything
+- **Input Validation**: All requests validated with Pydantic
+- **Rate Limiting**: Prevents API abuse
+- **Local Only**: Runs on localhost by default
+- **No External Dependencies**: All data stored locally
 
-```bash
-python test_system.py
-```
+## 👥 **Credits**
 
-Runs through all components to verify the system works correctly.
+**Original Author**: [Christian Byrne](https://github.com/christian-byrne)  
+**Original Repository**: https://github.com/christian-byrne/claude-code-vector-memory
 
-## How It Works
+This project builds upon Christian Byrne's original semantic memory system and extends it with a comprehensive HTTP API architecture, PowerShell integration, Windows startup capabilities, and cross-platform support. The foundational ChromaDB integration, semantic search functionality, and core memory indexing system were developed by the original author.
 
-1. **Indexing**: 
-   - Reads all markdown files from `~/.claude/compacted-summaries/`
-   - Extracts metadata (title, date, technologies, etc.)
-   - Generates embeddings using `all-MiniLM-L6-v2` model
-   - Stores in ChromaDB with metadata
+---
 
-2. **Searching**:
-   - Converts query to embedding
-   - Finds nearest neighbors in vector space
-   - Calculates hybrid score with recency weighting
-   - Returns top results above similarity threshold
-
-3. **Scoring Algorithm**:
-   ```
-   hybrid_score = (0.7 × semantic_similarity) + 
-                  (0.2 × recency_score) + 
-                  (0.1 × complexity_bonus)
-   ```
-
-## Integration with Claude Code
-
-The system is now fully integrated with Claude Code:
-
-### 1. Automatic Memory Search
-Claude Code will automatically search for relevant past work before starting new tasks. This is configured in `~/.claude/CLAUDE.md`.
-
-### 2. Manual Memory Search Command
-Use the command: `/system:semantic-memory-search <your task description>`
-
-### 3. Health Check Command
-Use the command: `/system:memory-health-check`
-
-### 4. Enhanced Summary Generation
-New summaries now include rich metadata for better search. Use:
-`/project:AGENT-summarize-and-log-current-session-v2`
-
-### Shell Scripts
-
-- `./setup.sh` - Initial setup and configuration
-- `./search.sh <query>` - Quick search interface
-- `./reindex.sh` - Rebuild the entire index (with backup)
-- `./run_tests.sh` - Run all tests and health checks
-
-### Python Scripts
-
-- `scripts/index_summaries.py` - Index summaries into ChromaDB
-- `scripts/memory_search.py` - Semantic search functionality
-- `scripts/health_check.py` - System diagnostics and reporting
-- `scripts/extract_metadata.py` - Metadata analysis tools
-
-### Testing
-
-Run the test suite with:
-```bash
-./run_tests.sh
-```
-
-Or run specific tests:
-```bash
-python -m pytest tests/test_metadata_extraction.py -v
-python -m pytest tests/test_search_functionality.py -v
-```
-
-## Database Location
-
-The vector database is stored at:
-```
-semantic-memory-system/chroma_db/
-```
-
-This persists between sessions, so you only need to index new summaries.
-
-## Extending the System
-
-- **Add more metadata**: Edit `extract_metadata()` in index_summaries.py
-- **Adjust scoring**: Modify weights in `search()` method
-- **Change embedding model**: Update `EMBEDDING_MODEL` constant
-- **Filter by project**: Add project-based filtering to search
+**Ready to get started?** See [QUICK_START.md](QUICK_START.md) for detailed setup instructions.

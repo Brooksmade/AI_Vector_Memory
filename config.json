@@ -1,0 +1,62 @@
+{
+    "api": {
+        "host": "localhost",
+        "port": 8080,
+        "debug": false,
+        "cors_origins": [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:8080",
+            "http://127.0.0.1:8080"
+        ],
+        "rate_limits": {
+            "search": "20 per minute",
+            "add_memory": "50 per minute", 
+            "delete_memory": "30 per minute",
+            "reindex": "5 per hour",
+            "default": "100 per minute"
+        }
+    },
+    "database": {
+        "path": "./chroma_db",
+        "collection_name": "claude_summaries",
+        "backup_enabled": true,
+        "backup_interval_hours": 24,
+        "backup_retention_days": 30
+    },
+    "search": {
+        "default_results": 3,
+        "max_results": 10,
+        "similarity_threshold": 0.3,
+        "enable_hybrid_scoring": true,
+        "recency_weight": 0.2,
+        "similarity_weight": 0.7,
+        "complexity_bonus": 0.1
+    },
+    "logging": {
+        "level": "INFO",
+        "file": "memory_api.log",
+        "max_file_size_mb": 10,
+        "backup_count": 5,
+        "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    },
+    "security": {
+        "request_timeout_seconds": 30,
+        "max_content_length_mb": 16,
+        "allowed_file_extensions": [".md", ".txt", ".json"],
+        "sanitize_input": true
+    },
+    "performance": {
+        "response_time_target_ms": 100,
+        "max_concurrent_requests": 50,
+        "enable_caching": true,
+        "cache_ttl_seconds": 300
+    },
+    "features": {
+        "auto_indexing": true,
+        "memory_deduplication": true,
+        "advanced_search": true,
+        "memory_analytics": true,
+        "export_functionality": false
+    }
+}

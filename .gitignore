@@ -1,33 +1,21 @@
+# Exclude project-specific CLAUDE.md file
+CLAUDE.md
+
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
+*.class
 *.so
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
 # Virtual environments
-venv/
-env/
-ENV/
-.venv/
-.env/
+.venv
+.env
 
 # IDE
 .vscode/
@@ -45,20 +33,13 @@ ENV/
 ehthumbs.db
 Thumbs.db
 
-# ChromaDB
-chroma_db/
-*.sqlite3
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-
 # Logs
 *.log
 logs/
-health_report.json
+
+# ChromaDB
+chroma_db/*.sqlite3-*
+chroma_db/*/index/
 
 # Temporary files
 *.tmp

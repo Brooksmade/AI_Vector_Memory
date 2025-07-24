@@ -1,0 +1,81 @@
+{
+  "timestamp": "2025-07-23T20:12:48.964909",
+  "database_status": {
+    "accessible": true,
+    "total_documents": 1,
+    "database_size_mb": 16.21,
+    "error": null
+  },
+  "coverage": {
+    "total_summaries": 1,
+    "indexed_summaries": 1,
+    "missing_summaries": [],
+    "orphaned_entries": []
+  },
+  "search_quality": [
+    {
+      "query": "vue component implementation",
+      "num_results": 1,
+      "avg_similarity": 0.0,
+      "search_time_ms": 250.27,
+      "top_match": "Memory System Setup and Integration"
+    },
+    {
+      "query": "typescript type safety",
+      "num_results": 1,
+      "avg_similarity": 0.0,
+      "search_time_ms": 160.24,
+      "top_match": "Memory System Setup and Integration"
+    },
+    {
+      "query": "python script",
+      "num_results": 1,
+      "avg_similarity": 0.0,
+      "search_time_ms": 166.3,
+      "top_match": "Memory System Setup and Integration"
+    },
+    {
+      "query": "git commit",
+      "num_results": 1,
+      "avg_similarity": 0.0,
+      "search_time_ms": 160.68,
+      "top_match": "Memory System Setup and Integration"
+    },
+    {
+      "query": "testing vitest",
+      "num_results": 1,
+      "avg_similarity": 0.0,
+      "search_time_ms": 156.26,
+      "top_match": "Memory System Setup and Integration"
+    },
+    {
+      "query": "frontend ui",
+      "num_results": 1,
+      "avg_similarity": 0.0,
+      "search_time_ms": 155.76,
+      "top_match": "Memory System Setup and Integration"
+    }
+  ],
+  "metadata_quality": {
+    "total": 1,
+    "with_title": 1,
+    "with_date": 1,
+    "with_semantic_desc": 0,
+    "with_technologies": 1,
+    "with_complexity": 1,
+    "missing_metadata": [
+      {
+        "filename": "2025-07-24_memory-system-setup.md",
+        "missing": [
+          "semantic_desc"
+        ]
+      }
+    ]
+  },
+  "model_status": {
+    "model_name": "sentence-transformers/all-MiniLM-L6-v2",
+    "loaded": true,
+    "dimension": 384,
+    "test_embedding_time_ms": 103.07
+  }
+}

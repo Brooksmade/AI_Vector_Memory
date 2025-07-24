@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  claude-memory-api:
+    build: .
+    container_name: claude-memory-api
+    ports:
+      - "8080:8080"
+    volumes:
+      # Persist the database
+      - ./chroma_db:/app/chroma_db
+      # Persist logs
+      - ./logs:/app/logs
+      # Mount config for easy updates
+      - ./config.json:/app/config.json:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+# Optional: Add a reverse proxy for HTTPS
+  nginx:
+    image: nginx:alpine
+    container_name: claude-memory-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - claude-memory-api
+    restart: unless-stopped
+    profiles:
+      - "with-proxy"

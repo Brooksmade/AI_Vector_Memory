@@ -28,13 +28,51 @@ Get-Process powershell -ErrorAction SilentlyContinue | Where-Object { $_.Command
 
 ## Step 2: Remove Windows Startup Integration
 
-### Remove Startup Script
+### Stop System Tray Application (if running)
 ```powershell
-# Remove startup script if it exists
-$startupPath = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\ClaudeMemoryAPI.ps1"
-if (Test-Path $startupPath) {
-    Remove-Item $startupPath -Force
-    Write-Host "Removed startup script: $startupPath"
+# Stop the system tray application if it's running
+Get-Process python -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -like "*memory_api_tray*" -or $_.CommandLine -like "*memory_api_tray.py*" } | Stop-Process -Force
+```
+
+### Remove Startup Scripts (Console and Tray versions)
+```powershell
+# Remove console version startup script
+$consoleStartupPath = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\ClaudeMemoryAPI.bat"
+if (Test-Path $consoleStartupPath) {
+    Remove-Item $consoleStartupPath -Force
+    Write-Host "Removed console startup script: $consoleStartupPath"
+}
+
+# Remove system tray startup script
+$trayStartupPath = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\ClaudeMemoryAPI-Tray.bat"
+if (Test-Path $trayStartupPath) {
+    Remove-Item $trayStartupPath -Force
+    Write-Host "Removed tray startup script: $trayStartupPath"
+}
+
+# Remove legacy PowerShell startup script
+$legacyStartupPath = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\ClaudeMemoryAPI.ps1"
+if (Test-Path $legacyStartupPath) {
+    Remove-Item $legacyStartupPath -Force
+    Write-Host "Removed legacy startup script: $legacyStartupPath"
+}
+```
+
+### Remove Desktop Shortcuts
+```powershell
+# Remove desktop shortcuts
+$desktopPath = [Environment]::GetFolderPath("Desktop")
+$shortcuts = @(
+    "$desktopPath\Claude Memory API (System Tray).lnk",
+    "$desktopPath\Claude Memory API (Console).lnk",
+    "$desktopPath\Claude Memory API Server.lnk"
+)
+
+foreach ($shortcut in $shortcuts) {
+    if (Test-Path $shortcut) {
+        Remove-Item $shortcut -Force
+        Write-Host "Removed desktop shortcut: $shortcut"
+    }
 }
 ```
 
@@ -44,14 +82,34 @@ if (Test-Path $startupPath) {
 Get-ScheduledTask | Where-Object { $_.TaskName -like "*Claude*Memory*" -or $_.TaskName -like "*MemoryAPI*" } | Unregister-ScheduledTask -Confirm:$false
 ```
 
-### Remove Windows Services (if any were installed)
+### Remove Windows Services (Console and Tray versions)
 ```powershell
-# Check for Windows services
-$service = Get-Service -Name "ClaudeMemoryAPI" -ErrorAction SilentlyContinue
-if ($service) {
+# Check for console version Windows service
+$consoleService = Get-Service -Name "ClaudeMemoryAPI" -ErrorAction SilentlyContinue
+if ($consoleService) {
     Stop-Service -Name "ClaudeMemoryAPI" -Force
-    Remove-Service -Name "ClaudeMemoryAPI"
-    Write-Host "Removed Windows service: ClaudeMemoryAPI"
+    & sc.exe delete "ClaudeMemoryAPI"
+    Write-Host "Removed console Windows service: ClaudeMemoryAPI"
+}
+
+# Check for system tray Windows service
+$trayService = Get-Service -Name "ClaudeMemoryAPITray" -ErrorAction SilentlyContinue
+if ($trayService) {
+    Stop-Service -Name "ClaudeMemoryAPITray" -Force
+    & sc.exe delete "ClaudeMemoryAPITray"
+    Write-Host "Removed tray Windows service: ClaudeMemoryAPITray"
+}
+
+# Remove service wrapper files
+$serviceWrappers = @(
+    "service_wrapper.bat",
+    "service_tray_wrapper.bat"
+)
+foreach ($wrapper in $serviceWrappers) {
+    if (Test-Path $wrapper) {
+        Remove-Item $wrapper -Force
+        Write-Host "Removed service wrapper: $wrapper"
+    }
 }
 ```
 
@@ -219,20 +277,35 @@ Run these commands to verify everything is removed:
 # 1. Check if directory exists
 Test-Path "E:\tools\claude-code-vector-memory"  # Should return False
 
-# 2. Check for running processes
-Get-Process | Where-Object { $_.ProcessName -like "*python*" -and $_.MainWindowTitle -like "*memory*" }  # Should return nothing
+# 2. Check for running processes (console and tray)
+Get-Process | Where-Object { $_.ProcessName -like "*python*" -and ($_.MainWindowTitle -like "*memory*" -or $_.CommandLine -like "*memory_api*") }  # Should return nothing
 
-# 3. Check startup folder
-Test-Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\ClaudeMemoryAPI.ps1"  # Should return False
+# 3. Check startup folder (all variants)
+Test-Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\ClaudeMemoryAPI.ps1"      # Should return False
+Test-Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\ClaudeMemoryAPI.bat"      # Should return False  
+Test-Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\ClaudeMemoryAPI-Tray.bat" # Should return False
 
-# 4. Check for PowerShell module
+# 4. Check desktop shortcuts
+$desktopPath = [Environment]::GetFolderPath("Desktop")
+Test-Path "$desktopPath\Claude Memory API (System Tray).lnk"  # Should return False
+Test-Path "$desktopPath\Claude Memory API (Console).lnk"      # Should return False
+Test-Path "$desktopPath\Claude Memory API Server.lnk"        # Should return False
+
+# 5. Check for PowerShell module
 Get-Module ClaudeMemory -ListAvailable  # Should return nothing
 
-# 5. Check environment variables
+# 6. Check environment variables
 [Environment]::GetEnvironmentVariable("CLAUDE_MEMORY_API_URL", "User")  # Should return nothing
 
-# 6. Check if port 8080 is free
+# 7. Check Windows services (both versions)
+Get-Service -Name "ClaudeMemoryAPI" -ErrorAction SilentlyContinue      # Should return nothing
+Get-Service -Name "ClaudeMemoryAPITray" -ErrorAction SilentlyContinue  # Should return nothing
+
+# 8. Check if port 8080 is free
 Test-NetConnection -ComputerName localhost -Port 8080  # Should fail or timeout
+
+# 9. Check system tray (manually)
+# Look at your system tray area - there should be no Claude Memory API icon
 ```
 
 ---
@@ -251,12 +324,14 @@ Restart-Computer -Confirm
 
 After restart, your system should be completely clean:
 - ✅ No Claude Memory API directory
-- ✅ No background processes
-- ✅ No startup scripts
+- ✅ No background processes (console or system tray)
+- ✅ No startup scripts (console or system tray versions)
+- ✅ No desktop shortcuts
+- ✅ No system tray icons
 - ✅ No PowerShell modules
 - ✅ No environment variables
 - ✅ No registry entries
-- ✅ No Windows services
+- ✅ No Windows services (console or tray versions)
 - ✅ Port 8080 available
 - ✅ No file associations
 

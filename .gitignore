@@ -1,10 +1,10 @@
-# Exclude project-specific CLAUDE.md file
+# Project-specific CLAUDE.md file
 CLAUDE.md
 
 # Python
 __pycache__/
 *.py[cod]
-*.class
+*$py.class
 *.so
 .Python
 env/
@@ -33,15 +33,32 @@ venv.bak/
 ehthumbs.db
 Thumbs.db
 
-# Logs
+# Logs and runtime files
 *.log
 logs/
+health_report.json
+validation_report.json
 
-# ChromaDB
-chroma_db/*.sqlite3-*
-chroma_db/*/index/
+# ChromaDB (auto-generated)
+chroma_db/
+*.sqlite3
+*.sqlite3-*
+chroma.sqlite3
+
+# Development artifacts
+test_from_web.py
+web_memory_wrapper.py
+validate_system.py
+run_tests.py
+
+# UUID directories (ChromaDB generated)
+c98ab297-3b2c-4836-8c29-a6d218beeb5f/
 
 # Temporary files
 *.tmp
 *.temp
 .cache/
+
+# Test directories (optional)
+tests/
+test_*.py

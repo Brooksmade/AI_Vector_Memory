@@ -90,6 +90,8 @@ class MemoryAPITrayApp:
                 # Hide the window
                 ctypes.windll.user32.ShowWindow(console_window, 0)  # SW_HIDE
                 self.logger.info("Console window hidden")
+            else:
+                self.logger.info("No console window to hide (running without console)")
         except Exception as e:
             self.logger.warning(f"Could not hide console window: {e}")
     
@@ -199,11 +201,15 @@ class MemoryAPITrayApp:
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
                 startupinfo.wShowWindow = subprocess.SW_HIDE
             
-            # Use PowerShell to activate venv and run server
-            cmd = [
-                "powershell", "-WindowStyle", "Hidden", "-Command",
-                f"cd '{Path.cwd()}'; .\\venv\\Scripts\\Activate.ps1; python memory_api_server.py"
-            ]
+            # Use the virtual environment's Python directly
+            venv_python = Path.cwd() / "venv" / "Scripts" / "python.exe"
+            if not venv_python.exists():
+                self.logger.error(f"Virtual environment Python not found: {venv_python}")
+                self.show_notification("Error", "Virtual environment Python not found")
+                return
+            
+            # Start server using venv Python directly
+            cmd = [str(venv_python), "memory_api_server.py"]
             
             self.server_process = subprocess.Popen(
                 cmd,
@@ -211,7 +217,10 @@ class MemoryAPITrayApp:
                 startupinfo=startupinfo,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+                creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+                cwd=str(Path.cwd()),  # Ensure correct working directory
+                encoding='utf-8',  # Handle Unicode output
+                errors='replace'  # Replace undecodable characters
             )
             
             self.is_running = True
@@ -219,8 +228,32 @@ class MemoryAPITrayApp:
             # Start health monitoring
             self.start_health_monitoring()
             
+            # Monitor server output in background
+            def monitor_output():
+                try:
+                    for line in iter(self.server_process.stdout.readline, ''):
+                        if line:
+                            self.logger.info(f"Server output: {line.strip()}")
+                except Exception as e:
+                    self.logger.error(f"Error monitoring server output: {e}")
+            
+            output_thread = threading.Thread(target=monitor_output, daemon=True)
+            output_thread.start()
+            
+            # Monitor server errors in background
+            def monitor_errors():
+                try:
+                    for line in iter(self.server_process.stderr.readline, ''):
+                        if line:
+                            self.logger.error(f"Server error: {line.strip()}")
+                except Exception as e:
+                    self.logger.error(f"Error monitoring server errors: {e}")
+            
+            error_thread = threading.Thread(target=monitor_errors, daemon=True)
+            error_thread.start()
+            
             # Wait a moment then check if server started
-            time.sleep(3)
+            time.sleep(5)  # Give more time to start
             if self.check_server_health():
                 self.update_icon_status("running")
                 self.show_notification(
@@ -229,11 +262,21 @@ class MemoryAPITrayApp:
                 )
                 self.logger.info("Server started successfully")
             else:
-                self.update_icon_status("error")
-                self.show_notification(
-                    "Server Error",
-                    "Server started but health check failed"
-                )
+                # Check if process is still running
+                if self.server_process and self.server_process.poll() is not None:
+                    self.logger.error(f"Server process exited with code: {self.server_process.returncode}")
+                    self.is_running = False
+                    self.update_icon_status("error")
+                    self.show_notification(
+                        "Server Crashed",
+                        "Server process terminated unexpectedly. Check logs."
+                    )
+                else:
+                    self.update_icon_status("error")
+                    self.show_notification(
+                        "Server Error",
+                        "Server started but health check failed"
+                    )
             
         except Exception as e:
             self.logger.error(f"Failed to start server: {e}")
@@ -413,6 +456,10 @@ Process ID: {self.server_process.pid if self.server_process else 'None'}
 def main():
     """Main entry point"""
     try:
+        # Add a small delay if running on startup to ensure Windows is ready
+        if "--startup" in sys.argv:
+            time.sleep(5)  # Wait 5 seconds for Windows to fully load
+            
         app = MemoryAPITrayApp()
         app.run()
     except KeyboardInterrupt:

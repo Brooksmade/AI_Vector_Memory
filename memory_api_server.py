@@ -121,25 +121,25 @@ startup_time = datetime.now()
 
 # Initialize once at startup
 try:
-    logger.info("🚀 Initializing Claude Memory API Server...")
-    logger.info(f"📁 Database path: {DB_PATH}")
-    logger.info(f"🗂️  Collection name: {COLLECTION_NAME}")
-    logger.info(f"🌐 Server: {API_HOST}:{API_PORT}")
-    logger.info(f"🔧 Debug mode: {DEBUG_MODE}")
+    logger.info("Initializing Claude Memory API Server...")
+    logger.info(f"Database path: {DB_PATH}")
+    logger.info(f"Collection name: {COLLECTION_NAME}")
+    logger.info(f"Server: {API_HOST}:{API_PORT}")
+    logger.info(f"Debug mode: {DEBUG_MODE}")
     
     searcher = MemorySearcher()
     indexer = SummaryIndexer()
     
     doc_count = searcher.collection.count()
-    logger.info(f"✅ Connected to ChromaDB successfully")
-    logger.info(f"📊 Document count: {doc_count}")
+    logger.info(f"Connected to ChromaDB successfully")
+    logger.info(f"Document count: {doc_count}")
     
     if doc_count == 0:
-        logger.warning("⚠️  Database is empty - consider running indexing scripts")
+        logger.warning("Database is empty - consider running indexing scripts")
         
 except Exception as e:
-    logger.error(f"❌ Failed to initialize database connection: {e}")
-    logger.error(f"🔧 Check that ChromaDB is installed and database path is accessible")
+    logger.error(f"Failed to initialize database connection: {e}")
+    logger.error(f"Check that ChromaDB is installed and database path is accessible")
     raise
 
 # Enhanced middleware for logging and monitoring
@@ -157,9 +157,9 @@ def before_request():
     
     if request.method == 'POST' and request.json:
         query = request.json.get('query', '')[:50] if request.json else ''
-        logger.info(f"📥 {request.method} {request.path} - {query} [ID: {request.request_id}] [IP: {client_ip}]")
+        logger.info(f"[REQUEST] {request.method} {request.path} - {query} [ID: {request.request_id}] [IP: {client_ip}]")
     else:
-        logger.info(f"📥 {request.method} {request.path} [ID: {request.request_id}] [IP: {client_ip}]")
+        logger.info(f"[REQUEST] {request.method} {request.path} [ID: {request.request_id}] [IP: {client_ip}]")
 
 @app.after_request
 def after_request(response):
@@ -171,11 +171,11 @@ def after_request(response):
         total_response_time += duration
         
         # Log response details
-        logger.info(f"📤 {response.status_code} - {duration_ms:.2f}ms [ID: {getattr(request, 'request_id', 'unknown')}]")
+        logger.info(f"[RESPONSE] {response.status_code} - {duration_ms:.2f}ms [ID: {getattr(request, 'request_id', 'unknown')}]")
         
         # Log slow requests as warnings
         if duration_ms > 1000:  # Slower than 1 second
-            logger.warning(f"🐌 Slow request: {request.method} {request.path} took {duration_ms:.2f}ms")
+            logger.warning(f"[SLOW] Request: {request.method} {request.path} took {duration_ms:.2f}ms")
             
         # Add performance headers
         response.headers['X-Response-Time'] = f"{duration_ms:.2f}ms"
@@ -186,7 +186,7 @@ def after_request(response):
 # Error handlers
 @app.errorhandler(404)
 def not_found(error):
-    logger.warning(f"🔍 404 Not Found: {request.method} {request.path} [ID: {getattr(request, 'request_id', 'unknown')}]")
+    logger.warning(f"[404] Not Found: {request.method} {request.path} [ID: {getattr(request, 'request_id', 'unknown')}]")
     return jsonify({
         'success': False,
         'error': {
@@ -203,7 +203,7 @@ def not_found(error):
 
 @app.errorhandler(429)
 def rate_limit_exceeded(error):
-    logger.warning(f"🚫 Rate limit exceeded: {request.remote_addr} [ID: {getattr(request, 'request_id', 'unknown')}]")
+    logger.warning(f"[RATE_LIMIT] Exceeded: {request.remote_addr} [ID: {getattr(request, 'request_id', 'unknown')}]")
     return jsonify({
         'success': False,
         'error': {
@@ -220,7 +220,7 @@ def rate_limit_exceeded(error):
 
 @app.errorhandler(500)
 def internal_error(error):
-    logger.error(f"💥 Internal server error: {error} [ID: {getattr(request, 'request_id', 'unknown')}]")
+    logger.error(f"[500] Internal server error: {error} [ID: {getattr(request, 'request_id', 'unknown')}]")
     return jsonify({
         'success': False,
         'error': {
@@ -712,32 +712,32 @@ def reindex_database():
         }), 500
 
 if __name__ == '__main__':
-    print("🚀 Starting Claude Memory API Server...")
-    print(f"📍 API available at: http://{API_HOST}:{API_PORT}")
-    print("📚 Available Endpoints:")
+    print("Starting Claude Memory API Server...")
+    print(f"API available at: http://{API_HOST}:{API_PORT}")
+    print("Available Endpoints:")
     print("   - POST /api/search           - Search for similar content")
     print("   - POST /api/add_memory       - Add new memory to database")
     print("   - GET  /api/health           - Check system health & status")
     print("   - GET  /api/memories         - List all memories (paginated)")
     print("   - DELETE /api/memory/<id>    - Delete specific memory by ID")
     print("   - POST /api/reindex          - Rebuild entire search index")
-    print("\n🔗 Integration URLs:")
+    print("\nIntegration URLs:")
     print("   - Claude Code CLI: Include this API in CLAUDE.md")
     print("   - Claude Desktop: Use JavaScript client library")
-    print("\n💡 Usage Examples:")
+    print("\nUsage Examples:")
     print(f"   curl -X POST http://{API_HOST}:{API_PORT}/api/search -H 'Content-Type: application/json' -d '{{\"query\":\"python flask\"}}'")
     print(f"   curl -X GET http://{API_HOST}:{API_PORT}/api/health")
-    print(f"\n📊 Configuration:")
+    print(f"\nConfiguration:")
     print(f"   - Debug mode: {DEBUG_MODE}")
     print(f"   - Log file: {log_file}")
     print(f"   - Database: {DB_PATH}")
     print(f"   - Collection: {COLLECTION_NAME}")
-    print("\n🌐 Starting server with CORS enabled for web interface...")
+    print("\nStarting server with CORS enabled for web interface...")
     
     try:
         app.run(host=API_HOST, port=API_PORT, debug=DEBUG_MODE)
     except KeyboardInterrupt:
-        logger.info("🛑 Server stopped by user")
+        logger.info("Server stopped by user")
     except Exception as e:
-        logger.error(f"💥 Server startup failed: {e}")
+        logger.error(f"Server startup failed: {e}")
         raise

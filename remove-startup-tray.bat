@@ -15,7 +15,7 @@ echo 🔍 Checking for startup file...
 
 if exist "%STARTUP_BAT%" (
     echo 🗑️ Removing startup file...
-    del "%STARTUP_BAT%"
+    del /f /q "%STARTUP_BAT%" 2>nul
     
     if not exist "%STARTUP_BAT%" (
         echo ✅ Successfully removed system tray from Windows startup!
@@ -23,6 +23,16 @@ if exist "%STARTUP_BAT%" (
     ) else (
         echo ❌ Failed to remove startup file!
         echo Please check permissions and try running as administrator.
+        echo.
+        echo Attempting with attrib command...
+        attrib -r -s -h "%STARTUP_BAT%" 2>nul
+        del /f /q "%STARTUP_BAT%" 2>nul
+        
+        if not exist "%STARTUP_BAT%" (
+            echo ✅ Successfully removed after clearing attributes!
+        ) else (
+            echo ❌ Still unable to remove. File may be in use or protected.
+        )
     )
 ) else (
     echo ⚠️ System tray startup is not currently installed.

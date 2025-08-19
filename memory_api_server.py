@@ -18,6 +18,22 @@ sys.path.append(str(Path(__file__).parent / "scripts"))
 from memory_search import MemorySearcher
 from index_summaries import SummaryIndexer
 
+# Import active memory features (optional - will load if available)
+try:
+    from memory_active_features import initialize_active_memory
+    ACTIVE_MEMORY_AVAILABLE = True
+except ImportError:
+    ACTIVE_MEMORY_AVAILABLE = False
+    print("Active memory features not available - install watchdog for file monitoring")
+
+# Import curation features (optional - will load if available)
+try:
+    from memory_curation_api import initialize_curation_api
+    CURATION_API_AVAILABLE = True
+except ImportError:
+    CURATION_API_AVAILABLE = False
+    print("Curation API not available - install scikit-learn and rich for curation features")
+
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000"])  # Enable CORS for web interface
 
@@ -721,6 +737,38 @@ if __name__ == '__main__':
     print("   - GET  /api/memories         - List all memories (paginated)")
     print("   - DELETE /api/memory/<id>    - Delete specific memory by ID")
     print("   - POST /api/reindex          - Rebuild entire search index")
+    
+    # Initialize active memory features if available
+    if ACTIVE_MEMORY_AVAILABLE:
+        try:
+            # Try to detect project root from environment or config
+            project_root = os.environ.get('CLAUDE_PROJECT_ROOT', os.getcwd())
+            initialize_active_memory(app, searcher, project_root)
+            print("\n[OK] Active Memory Features Enabled:")
+            print("   - GET  /api/active/status        - Get active memory status")
+            print("   - GET  /api/active/decisions     - Get pending warnings/decisions")
+            print("   - POST /api/active/context       - Update current context")
+            print("   - POST /api/active/check_before_action - Pre-action memory check")
+            print(f"   - Watching project: {project_root}")
+        except Exception as e:
+            print(f"\n[WARNING] Active memory features failed to initialize: {e}")
+            print("   Basic memory API will still function normally")
+    
+    # Initialize curation API if available
+    if CURATION_API_AVAILABLE:
+        try:
+            initialize_curation_api(app, searcher, indexer)
+            print("\n[OK] Memory Curation Features Enabled:")
+            print("   - GET  /api/curator/health       - Analyze memory health")
+            print("   - POST /api/curator/deduplicate  - Remove duplicate memories")
+            print("   - POST /api/curator/consolidate  - Consolidate memories")
+            print("   - POST /api/curator/archive      - Archive old memories")
+            print("   - POST /api/curator/enhance/<id> - Enhance memory quality")
+            print("   - GET  /api/curator/analyze      - Analyze patterns")
+            print("   - POST /api/curator/auto-curate  - Auto-curate memories")
+        except Exception as e:
+            print(f"\n[WARNING] Curation features failed to initialize: {e}")
+    
     print("\nIntegration URLs:")
     print("   - Claude Code CLI: Include this API in CLAUDE.md")
     print("   - Claude Desktop: Use JavaScript client library")

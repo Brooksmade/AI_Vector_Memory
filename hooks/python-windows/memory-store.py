@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Claude Code Hook - Store errors and outcomes after operations"""
 
 import sys
+import os
+os.environ['PYTHONIOENCODING'] = 'utf-8'
 import json
 import requests
 from datetime import datetime
 import os
 
 def main():
+    print("[HOOK] Memory store hook running...")
     try:
         # Read JSON payload from stdin
         json_payload = sys.stdin.read()
@@ -38,14 +42,23 @@ def main():
                 'project': os.path.basename(os.getcwd())
             }
             
-            requests.post(
+            response = requests.post(
                 'http://localhost:8080/api/add_memory',
                 json=memory_data,
                 timeout=3
             )
-    except Exception:
-        # Silent fail
-        pass
+            if response.status_code == 200:
+                print(f"   [STORED] Error stored in memory: {tool_name} on {os.path.basename(file_path)}")
+            else:
+                print(f"   [WARNING] Failed to store error in memory")
+        else:
+            print(f"   [OK] No errors detected in {tool_name} response")
+    except Exception as e:
+        # Print error but don't block
+        try:
+            print(f"   [ERROR] Hook error: {str(e)[:50]}")
+        except:
+            print("   [ERROR] Hook encountered an error")
     
     return 0
 

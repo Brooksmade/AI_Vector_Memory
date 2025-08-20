@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Claude Code Hook - Save session summary at end"""
 
 import sys
+import os
+os.environ['PYTHONIOENCODING'] = 'utf-8'
 import json
 import requests
 from datetime import datetime
 import os
 
 def main():
+    try:
+        print("[HOOK] Session end hook running...")
+    except:
+        print("[HOOK] Session end hook running...")
     try:
         # Read JSON payload from stdin if available
         json_payload = ""
@@ -55,11 +62,16 @@ def main():
         )
         
         if response.status_code == 200:
-            print("💾 Session summary saved to memory")
-        
-    except Exception:
-        # Silent fail
-        pass
+            print("   [SAVED] Session summary saved to memory")
+        else:
+            print("   [WARNING] Failed to save session summary")
+            
+    except Exception as e:
+        # Print error but don't block
+        try:
+            print(f"   [ERROR] Hook error: {str(e)[:50]}")
+        except:
+            print("   [ERROR] Hook encountered an error")
     
     return 0
 

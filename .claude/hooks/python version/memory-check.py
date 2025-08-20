@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Claude Code Hook - Check memory before file operations"""
 
 import sys
+import os
+os.environ['PYTHONIOENCODING'] = 'utf-8'
 import json
 import requests
 
 def main():
+    print("[HOOK] Memory check hook running...")
     try:
         # Read JSON payload from stdin
         json_payload = sys.stdin.read()
@@ -14,6 +18,8 @@ def main():
         # Extract tool name and file path
         tool_name = data.get('tool_name', '')
         file_path = data.get('tool_input', {}).get('file_path', '')
+        
+        print(f"   Tool: {tool_name}, File: {file_path or 'N/A'}")
         
         # Check if it's a file operation
         if tool_name in ['Edit', 'Write', 'MultiEdit'] and file_path:
@@ -39,14 +45,21 @@ def main():
                     
                     if warnings:
                         for warning in warnings:
-                            print(f"⚠️ Memory Warning: {warning.get('title', 'Unknown')} ({warning.get('date', 'Unknown')})")
+                            print(f"[WARNING] Memory Warning: {warning.get('title', 'Unknown')} ({warning.get('date', 'Unknown')})")
                             preview = warning.get('preview', '')[:150]
                             if preview:
                                 print(f"   Preview: {preview}...")
-                        print("\n💡 Consider checking the memory for past solutions before proceeding.")
-    except Exception:
-        # Silent fail - don't block operation
-        pass
+                        print("\n[TIP] Consider checking the memory for past solutions before proceeding.")
+                    else:
+                        print("   [OK] No warnings found in memory")
+                else:
+                    print("   [INFO] Memory check skipped (not a file operation)")
+    except Exception as e:
+        # Print error but don't block operation
+        try:
+            print(f"   [ERROR] Hook error: {str(e)[:50]}")
+        except:
+            print("   [ERROR] Hook encountered an error")
     
     return 0
 

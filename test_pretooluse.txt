@@ -1,0 +1,1 @@
+Testing PreToolUse hooks - should trigger memory-enforce, first-action-check, and memory-check

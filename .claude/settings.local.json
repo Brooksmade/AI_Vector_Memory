@@ -1,8 +1,112 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dir)"
+      "Bash(dir)",
+      "Bash(python)",
+      "Bash(python hooks/python-windows/*)",
+      "Bash(curl)",
+      "Bash(curl -X POST http://localhost:8080/api/*)",
+      "Bash(curl http://localhost:8080/api/*)",
+      "Bash(ls)",
+      "Bash(cat)",
+      "WebSearch",
+      "Read(*.md)",
+      "Read(*.txt)",
+      "Read(CLAUDE.md)",
+      "Read(C:\\temp/**)",
+      "Bash(dir:*)",
+      "Bash(del nul)",
+      "Bash(rm:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
+  },
+  "hooks": {
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/python-windows/session-end.py",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/python-windows/session-end.py",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/python-windows/memory-enforce.py",
+            "timeout": 1000
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/python-windows/first-action-check.py",
+            "timeout": 3000
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/python-windows/memory-check.py",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/python-windows/test-check.py",
+            "timeout": 3000
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/python-windows/git-check.py",
+            "timeout": 3000
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/python-windows/dependency-check.py",
+            "timeout": 3000
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/python-windows/memory-store.py",
+            "timeout": 3000
+          }
+        ]
+      }
+    ]
   }
 }
